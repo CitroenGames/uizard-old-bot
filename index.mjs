@@ -20,14 +20,13 @@ async function run() {
           args: ['--no-sandbox', '--disable-setuid-sandbox'],
         });
   const page = await browser.newPage();
-  const antibotdelay = getRandomInt(20000,30000);
+  const antibotdelay = getRandomInt(15000,20000);
 
   while (true) {
     const userAgent = getRandomUserAgent(userAgents);
     console.log('Using user agent:', userAgent);
     const [viewportWidth, viewportHeight] = getRandomResolution(resolutions);
     console.log('Using resolution:', viewportWidth, 'x', viewportHeight);
-    const antibotdelay = getRandomInt(20000,30000);
     try {
       await page.setUserAgent(userAgent);
 

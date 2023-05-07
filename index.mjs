@@ -14,22 +14,21 @@ async function run() {
   let userAgents = fs.readFileSync('useragents.txt', 'utf-8').split('\n');
   let resolutions = fs.readFileSync('resolutions.txt', 'utf-8').split('\n');
   let browser;
+  browser = await puppeteer.launch({
+          headless: config.headless,
+          executablePath: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+          args: ['--no-sandbox', '--disable-setuid-sandbox'],
+        });
+  const page = await browser.newPage();
+  const antibotdelay = getRandomInt(20000,30000);
 
   while (true) {
     const userAgent = getRandomUserAgent(userAgents);
     console.log('Using user agent:', userAgent);
-
     const [viewportWidth, viewportHeight] = getRandomResolution(resolutions);
     console.log('Using resolution:', viewportWidth, 'x', viewportHeight);
-
+    const antibotdelay = getRandomInt(20000,30000);
     try {
-      browser = await puppeteer.launch({
-        headless: config.headless,
-        executablePath: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
-        args: ['--no-sandbox', '--disable-setuid-sandbox'],
-      });
-
-      const page = await browser.newPage();
       await page.setUserAgent(userAgent);
 
       // Set a random viewport size
@@ -37,7 +36,13 @@ async function run() {
 
       console.log('Navigating to the main page');
       await page.goto(`${pageUrl}`);
-
+      console.log(`going wait for ${antibotdelay} ms`)
+      await delay(antibotdelay);
+      await page.goto(`https://uizard.io/autodesigner/dashboard/`);
+      console.log(`going wait for ${antibotdelay} ms`)
+      await delay(antibotdelay);
+      await page.goto(`${pageUrl}`);
+      await delay(getRandomInt(3000,8000));
       const emailInputSelector = 'input[placeholder="Work Email"]';
       const email = getRandomEmail();
       console.log('Generated email:', email);
@@ -100,11 +105,10 @@ async function run() {
       clearInterval(interval);
 
       const currentUrl = page.url();
-      if (currentUrl.startsWith('https://uizard.io/autodesigner/dashboard/')) {
+      if (currentUrl.startsWith('https://uizard.io/autodesigner/dashboard/?slug=')) {
         console.log('Redirected to the dashboard:', currentUrl);
       } else {
         console.log('Did not redirect to the dashboard, trying again');
-        await page.close();
       }
     } catch (error) {
       console.error('Error:', error.message);
@@ -112,7 +116,6 @@ async function run() {
       if (browser) {
         console.log(`Waiting for ${config.delay} ms before starting the next iteration.`);
         await delay(config.delay);
-        await browser.close();
       }
     }
   }
@@ -141,6 +144,11 @@ function getRandomInt(min, max) {
   min = Math.ceil(min);
   max = Math.floor(max);
   return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function getRandomResolution(resolutions) {
+  const resolution = resolutions[Math.floor(Math.random() * resolutions.length)].split('x');
+  return [parseInt(resolution[0]), parseInt(resolution[1])];
 }
 
 function delay(ms) {

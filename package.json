@@ -1,0 +1,24 @@
+{
+  "name": "bruh",
+  "version": "1.0.0",
+  "main": "index.mjs",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "clipboardy": "^3.0.0",
+    "config": "^3.3.9",
+    "fs": "^0.0.1-security",
+    "path": "^0.12.7",
+    "phantomjs-prebuilt": "^2.1.16",
+    "puppeteer": "^20.1.1",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
+    "selenium-webdriver": "^4.9.0"
+  },
+  "devDependencies": {},
+  "description": ""
+}

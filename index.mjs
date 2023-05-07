@@ -20,7 +20,7 @@ async function run() {
           args: ['--no-sandbox', '--disable-setuid-sandbox'],
         });
   const page = await browser.newPage();
-  const antibotdelay = getRandomInt(15000,20000);
+  const antibotdelay = getRandomInt(5000,10000);
 
   while (true) {
     const userAgent = getRandomUserAgent(userAgents);
@@ -32,20 +32,31 @@ async function run() {
 
       // Set a random viewport size
       await page.setViewport({ width: viewportWidth, height: viewportHeight });
-      if (config.useProxy) {
+/*      if (config.useProxy) {
+        const proxies = await readProxiesFromFile();
+        const proxy = proxies[Math.floor(Math.random() * proxies.length)];
+        const [proxyHost, proxyPort, proxyUsername, proxyPassword] = proxy.split(':');
+
+        try {
         const ProxyChain = require('proxy-chain');
-        const newProxyUrl = await ProxyChain.anonymizeProxy(config.proxyUrl);
-        await page.authenticate({ username: config.proxyUsername, password: config.proxyPassword });
+        const newProxyUrl = await ProxyChain.anonymizeProxy(`http://${proxyHost}:${proxyPort}`);
+        await page.authenticate({ username: proxyUsername, password: proxyPassword });
         await page.setRequestInterception(true);
+
         page.on('request', request => {
         const url = new URL(request.url());
         if (url.hostname !== 'localhost' && url.hostname !== '127.0.0.1') {
-        request.abort();
-        } else {
-        request.continue({ proxyUrl: newProxyUrl });
+          request.abort();
+          } else {
+            request.continue({ proxyUrl: newProxyUrl });
         }
-      });
-      }
+        });
+        } catch (error) {
+          console.log('Invalid proxy:', proxy);
+          await removeProxyFromFile(proxy);
+          throw new Error('Invalid proxy');
+        }
+      }*/
       console.log('Navigating to the main page');
       await page.goto(`${pageUrl}`);
       console.log(`going wait for ${antibotdelay} ms`)
@@ -55,7 +66,7 @@ async function run() {
       await delay(antibotdelay);
       await page.goto(`${pageUrl}`);
       await delay(getRandomInt(3000,8000));
-      const emailInputSelector = 'input[placeholder="Work Email"]';
+      const emailInputSelector = 'input[type="email"]';
       const email = getRandomEmail();
       console.log('Generated email:', email);
 
@@ -66,7 +77,7 @@ async function run() {
 
         // Add random delay before clicking the button
         const clickDelay = getRandomInt(500, 2000);
-        await delay(clickDelay);
+                await delay(clickDelay);
 
         console.log('Clicking "Get early access" button');
         await page.evaluate(() => {
@@ -133,6 +144,17 @@ async function run() {
   }
 }
 
+async function readProxiesFromFile() {
+  const proxies = fs.readFileSync('proxy.txt', 'utf-8').split('\n');
+  return proxies.map(proxy => proxy.trim()).filter(proxy => proxy.length > 0);
+}
+
+async function removeProxyFromFile(proxyToRemove) {
+  const proxies = await readProxiesFromFile();
+  const filteredProxies = proxies.filter(proxy => proxy !== proxyToRemove);
+  fs.writeFileSync('proxy.txt', filteredProxies.join('\n'), 'utf-8');
+}
+
 function getRandomUserAgent(userAgents) {
   const userAgent = userAgents[Math.floor(Math.random() * userAgents.length)];
   return userAgent.replace(/[\n\r]/g, '').trim(); // Remove newline characters and trim spaces
@@ -160,7 +182,7 @@ function getRandomInt(min, max) {
 
 function getRandomResolution(resolutions) {
   const resolution = resolutions[Math.floor(Math.random() * resolutions.length)].split('x');
-  return [parseInt(resolution[0]), parseInt(resolution[1])];
+  return [parseInt(resolution[0]), parseInt(resolution[1])]; // Added missing square bracket
 }
 
 function delay(ms) {
@@ -170,3 +192,4 @@ function delay(ms) {
 (async () => {
   await run();
 })();
+

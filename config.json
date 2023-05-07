@@ -1,5 +1,5 @@
 {
-  "delay": 90000,
+  "delay": 45000,
   "headless" : false,
   "useProxies": false,
   "autodo" : true,

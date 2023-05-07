@@ -12,26 +12,27 @@ const pageUrl = config.pageUrl;
 
 async function run() {
   let userAgents = fs.readFileSync('useragents.txt', 'utf-8').split('\n');
+  let resolutions = fs.readFileSync('resolutions.txt', 'utf-8').split('\n');
   let browser;
 
   while (true) {
     const userAgent = getRandomUserAgent(userAgents);
     console.log('Using user agent:', userAgent);
 
+    const [viewportWidth, viewportHeight] = getRandomResolution(resolutions);
+    console.log('Using resolution:', viewportWidth, 'x', viewportHeight);
+
     try {
       browser = await puppeteer.launch({
-      headless: config.headless,
-      executablePath: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+        headless: config.headless,
+        executablePath: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
       });
-
 
       const page = await browser.newPage();
       await page.setUserAgent(userAgent);
 
       // Set a random viewport size
-      const viewportWidth = 1920;
-      const viewportHeight = 1080;
       await page.setViewport({ width: viewportWidth, height: viewportHeight });
 
       console.log('Navigating to the main page');
@@ -101,7 +102,6 @@ async function run() {
       const currentUrl = page.url();
       if (currentUrl.startsWith('https://uizard.io/autodesigner/dashboard/')) {
         console.log('Redirected to the dashboard:', currentUrl);
-        
       } else {
         console.log('Did not redirect to the dashboard, trying again');
         await page.close();

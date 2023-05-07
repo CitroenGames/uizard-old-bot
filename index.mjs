@@ -32,7 +32,20 @@ async function run() {
 
       // Set a random viewport size
       await page.setViewport({ width: viewportWidth, height: viewportHeight });
-
+      if (config.useProxy) {
+        const ProxyChain = require('proxy-chain');
+        const newProxyUrl = await ProxyChain.anonymizeProxy(config.proxyUrl);
+        await page.authenticate({ username: config.proxyUsername, password: config.proxyPassword });
+        await page.setRequestInterception(true);
+        page.on('request', request => {
+        const url = new URL(request.url());
+        if (url.hostname !== 'localhost' && url.hostname !== '127.0.0.1') {
+        request.abort();
+        } else {
+        request.continue({ proxyUrl: newProxyUrl });
+        }
+      });
+      }
       console.log('Navigating to the main page');
       await page.goto(`${pageUrl}`);
       console.log(`going wait for ${antibotdelay} ms`)
